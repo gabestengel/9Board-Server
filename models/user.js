@@ -7,7 +7,8 @@ var userSchema   = new Schema({
     stats: {
         wins: Number,
         losses:  Number
-    }    
+    },
+    pastGames: [Number]
 });
 
 module.exports = mongoose.model('user', userSchema);
