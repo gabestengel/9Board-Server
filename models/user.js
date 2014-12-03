@@ -5,8 +5,11 @@ var userSchema   = new Schema({
 	name: String,
     deviceID: String,
     stats: {
-        wins: Number,
-        losses:  Number
+        wins: Number,s
+        losses:  Number,
+        ties: Number,
+        percent: Number,
+        quitPercent: Number
     },
     pastGames: [Number]
 });

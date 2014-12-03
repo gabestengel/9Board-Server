@@ -14,7 +14,7 @@ var gameSchema   = new Schema({
         ///Null, Player1, Player2
         winner: String
     },
-    gameStates: [gameStateSchema]
+    gameStates: [gameState]
 });
 
 module.exports = mongoose.model('game', gameSchema);
