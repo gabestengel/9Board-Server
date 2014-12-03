@@ -1,0 +1,25 @@
+{
+  "name": "9Board-Server",
+  "version": "1.0.0",
+  "description": "the nineboard tic-tac-toe server",
+  "main": "server.js",
+  "dependencies": {
+    "express": "^4.10.4",
+    "mongoose": "^3.8.20"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gabestengel/9Board-Server.git"
+  },
+  "author": "Scott Ellenoff",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gabestengel/9Board-Server/issues"
+  },
+  "homepage": "https://github.com/gabestengel/9Board-Server"
+}
