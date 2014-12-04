@@ -5,19 +5,19 @@ mongoose.connect('mongodb://localhost/test');
 app.post('/api/user', function(req, res){
     
 });
-app.get('/api/:id/stats', function(req,res){
+app.get('/api/user/:id/stats', function(req,res){
     
 });
-app.get('/api/:id/games/active', function(req,res){
+app.get('/api/user/:id/games/active', function(req,res){
     
 });
-app.get('/api/:id/games/:gameid', function(req,res){
+app.get('/api/user/:id/games/:gameid', function(req,res){
     
 });
-app.get('/api/:id/games/all', function(req,res){
+app.get('/api/user/:id/games/all', function(req,res){
     
 });
-app.get('/api/:id/games/past', function(req,res){
+app.get('/api/user/:id/games/past', function(req,res){
     
 });
 app.post('/api/:id/games/:gameid', function(req, res){
