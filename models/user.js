@@ -5,7 +5,7 @@ var userSchema   = new Schema({
 	name: String,
     deviceID: String,
     stats: {
-        wins: Number,s
+        wins: Number,
         losses:  Number,
         ties: Number,
         percent: Number,

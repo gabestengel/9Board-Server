@@ -1,5 +1,6 @@
 var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
+var gameStateSchema = require('../schemas/game-state.js');
 
 var gameSchema   = new Schema({
     gameID: Number,
@@ -14,7 +15,7 @@ var gameSchema   = new Schema({
         ///Null, Player1, Player2
         winner: String
     },
-    gameStates: [gameState]
+    gameStates: [gameStateSchema]
 });
 
 module.exports = mongoose.model('game', gameSchema);
