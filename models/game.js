@@ -5,9 +5,9 @@ var gameStateSchema = require('../schemas/game-state.js');
 var gameSchema   = new Schema({
     gameID: Number,
 	players: {
-        //Player1 is Xs, Player 2 is Os
-        player1DeviceID: String,
-        player2DeviceID: String
+        	//Player1 is Xs, Player 2 is Os
+        	player1Id: String,
+        	player2Id: String
     },
     gameStatus: {
         //Active, Paused, 12Quit, Done
