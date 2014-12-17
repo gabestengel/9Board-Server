@@ -5,7 +5,7 @@ mongoose.connect('mongodb://localhost/test');
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var NineboardGameState = require('./models/game-state.js');
-//var tree = app.createServer();
+
 app.post('/api/user', function(req, res){
     NineboardUser.save(function(err){
         if(!err){
