@@ -18,9 +18,9 @@ app.post('/api/user', function(req, res){
 });
 //need some help understanding this function
 app.get('/api/user/:id/stats', function(req,res){
-    NineboardUser.findById(req.params.id, function(err,game){
+    NineboardUser.findById(req.params.id, function(err,person){
         if(!err){
-            res.json(game);
+            res.json(person.stats);
         }
         else{
             res.send(err);
@@ -28,16 +28,20 @@ app.get('/api/user/:id/stats', function(req,res){
     });
 });
 app.get('/api/user/:id/games/active', function(req,res){
-    NineboardUser.findById(req.params.id,function(err){
+    NineboardUser.findById(req.params.id,function(err, person){
        if(!err){
-           NineboardGame.find(function(err, game){
-               if(!err){
-                   res.json(game);
-               }
-               else{
-                   res.send(err);
-               }
-           });
+           NineboardGame.find({'players':person.DeviceID}, function(err,game)){
+                if(!err){
+                    for(var i=0; i<game.length; i++){
+                        if(game.gamestatus.ongoing=JSON.parse("Active")){
+                            res.json(game);
+                        }
+                    }
+                }
+                else{
+                    res.send(err);
+                }
+            });
        }
        else{
            res.send(err);
@@ -45,14 +49,13 @@ app.get('/api/user/:id/games/active', function(req,res){
     });
 });
 app.get('/api/user/:id/games/:gameid', function(req,res){
-    NineboardUser.findById(req.params.id, function(err){
+    NineboardUser.findById(req.params.id, function(err, person){
         if(!err){
-            NineboardGame.findById(req.params.gameid, function(err, game){
-                if(!err){
-                    res.json(game);
-                }
-                else{
-                    res.send(err);
+            NineboardGame.find({'players':person.DeviceID},function(err, game){
+                for(var i=0; i<game.length; i++){
+                    if(game.gameID=req.params.gameid){
+                        res.json(game);
+                    }
                 }
             });
         }
@@ -62,9 +65,9 @@ app.get('/api/user/:id/games/:gameid', function(req,res){
     });
 });
 app.get('/api/user/:id/games/all', function(req,res){
-    NineboardUser.findById(req.param.id, function(err){
+    NineboardUser.findById(req.param.id, function(err, person){
         if(!err){
-            NineboardGame.find(function(err, game){
+            NineboardGame.find({'players':person.DeviceID}, function(err, game){
                 if(!err){
                     res.json(game);
                 }
@@ -79,11 +82,15 @@ app.get('/api/user/:id/games/all', function(req,res){
     });
 });
 app.get('/api/user/:id/games/past', function(req,res){
-    NineboardUser.findById(req.param.id, function(err){
+    NineboardUser.findById(req.param.id, function(err, person){
         if(!err){
-            NineboardGame.find(function(err, game){
+            NineboardGame.find({'players': person.DeviceID}, function(err, game){
                 if(!err){
-                    res.json(game);
+                    for(var i=0; i<game.length; i++){
+                        if(game.gamestatus.ongoing=JSON.parse("Done")){
+                            res.json(game);
+                        }
+                    }
                 }
                 else{
                     res.send(err);
@@ -95,6 +102,7 @@ app.get('/api/user/:id/games/past', function(req,res){
         }
     });
 });
+//dont get this one
 app.post('/api/:id/games/:gameid', function(req, res){
     NineboardUser.findById(req.param.id, function(err){
         if(!err){
