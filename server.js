@@ -30,7 +30,7 @@ app.get('/api/user/:id/stats', function(req,res){
 app.get('/api/user/:id/games/active', function(req,res){
     NineboardUser.findById(req.params.id,function(err, person){
        if(!err){
-           NineboardGame.find({'players':person.DeviceID}, function(err,game)){
+           NineboardGame.find({'players':person.DeviceID}, function(err,game){
                 if(!err){
                     for(var i=0; i<game.length; i++){
                         if(game.gamestatus.ongoing=JSON.parse("Active")){
