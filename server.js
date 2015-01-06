@@ -151,6 +151,11 @@ app.post('/api/:id/games/:gameid', function(req, res){
         }
     });
 });
+
+/* Leaderboard
+// Paramters: none
+// Returns: leaderboard data, an array of all users with their statistics, sorted from highest to lowest
+*/
 var server= app.listen(3000, function(){
     var host= server.address().address;
     var port= server.address().port;
