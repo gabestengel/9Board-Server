@@ -132,7 +132,7 @@ app.get('/api/user/:id/games/past', function(req,res){
 // req.param.id: id of the user playing the turn
 // req.body.turn: the actual turn that the user is playing, an integer, ie 75 means big board index 7, small board index 5
 // Returns: the new game state, complete with new board/current game state
-// Work: update board, check for win, return ^
+// Work: update board, check for win, if so update stats, return ^
 */
 app.post('/api/:id/games/:gameid', function(req, res){
     NineboardUser.findById(req.param.id, function(err){
