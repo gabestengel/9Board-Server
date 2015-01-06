@@ -51,7 +51,7 @@ app.get('/api/user/:id/games/active', function(req,res){
 app.get('/api/user/:id/games/:gameid', function(req,res){
     NineboardUser.findById(req.params.id, function(err, person){
         if(!err){
-            NineboardGame.find({'players':person.DeviceID},function(err, game){
+            NineboardGame.find({'players':person.id},function(err, game){
                 for(var i=0; i<game.length; i++){
                     if(game.gameID=req.params.gameid){
                         res.json(game);
@@ -67,7 +67,7 @@ app.get('/api/user/:id/games/:gameid', function(req,res){
 app.get('/api/user/:id/games/all', function(req,res){
     NineboardUser.findById(req.param.id, function(err, person){
         if(!err){
-            NineboardGame.find({'players':person.DeviceID}, function(err, game){
+            NineboardGame.find({'players':id}, function(err, game){
                 if(!err){
                     res.json(game);
                 }
@@ -84,7 +84,7 @@ app.get('/api/user/:id/games/all', function(req,res){
 app.get('/api/user/:id/games/past', function(req,res){
     NineboardUser.findById(req.param.id, function(err, person){
         if(!err){
-            NineboardGame.find({'players': person.DeviceID}, function(err, game){
+            NineboardGame.find({'players': id}, function(err, game){
                 if(!err){
                     for(var i=0; i<game.length; i++){
                         if(game.gamestatus.ongoing=JSON.parse("Done")){
@@ -123,5 +123,5 @@ app.post('/api/:id/games/:gameid', function(req, res){
 var server= app.listen(3000, function(){
     var host= server.address().address;
     var port= server.address().port;
-    console.log("SERVER STARTED");
+    console.log("SERVER STARTED at http://%s:%s",host,port);
 });
