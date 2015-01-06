@@ -51,7 +51,7 @@ app.get('/api/user/:id/games/active', function(req,res){
 app.get('/api/user/:id/games/:gameid', function(req,res){
     NineboardUser.findById(req.params.id, function(err, person){
         if(!err){
-            NineboardGame.find({'players':person.id},function(err, game){
+            NineboardGame.find({'players':id},function(err, game){
                 for(var i=0; i<game.length; i++){
                     if(game.gameID=req.params.gameid){
                         res.json(game);
