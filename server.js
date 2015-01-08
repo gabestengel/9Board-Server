@@ -15,11 +15,18 @@ var NineboardGameState = require('./models/game-state.js');
 // Work: insert new user into database
 */
 app.post('/api/user', function(req, res){
-    NineboardUser.save(function(err){
+    var facebookId= req.body.facebookId;
+    var deviceId= req.body.deviceId;
+    var name= req.body.name;
+    var user= new NineboardUser();
+    user.name= name;
+    user.deviceId= deviceId;
+    user.facebookId= facebookId;
+    user.save(function(err,savedUser){
         if(!err){
-            res.send("created");
+            res.send(savedUser.id);
         }
-        else{
+        else {
             res.send(err);
         }
     });
