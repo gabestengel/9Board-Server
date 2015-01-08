@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
+//mongoose.connect('mongodb://localhost/test');
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var NineboardGameState = require('./models/game-state.js');
@@ -166,10 +166,15 @@ app.post('/api/:id/games', function(err,res){
     var game= new NineboardGame;
     game.players= [player1Id, player2Id];
     game.Status= ["Active", ""];
-    var gameStates= new GameState();
+    var gameStates= new NineboardGameState();
     gameState.currentPlayerMove=1;
     gameState.lastMove= [null, null];
-    gameState.bigBoard= [];
+    var smallBoard1= new smallBoardSchema();
+    smallBoard1.board=[0,0,0,0,0,0,0,0,0];
+    var bigBoard1= new nineBoardSchema();
+    bigBoard1.smallBoard=[smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1];
+    gameState.bigBoard= [bigBoard1];
+    game.gameStates=[gameStates];
     game.save(function(err,savedGame){
         if(!err){
             res.json(savedGame);
@@ -202,6 +207,7 @@ var server= app.listen(3000, function(){
     var port= server.address().port;
     console.log("SERVER STARTED at http://%s:%s",host,port);
 });
+
 //function for checking win
 function checkWin(game, recentTurn){
     var bigBoardIndex= (recentTurn/10)%10;
