@@ -166,6 +166,10 @@ app.post('/api/:id/games', function(err,res){
     var game= new NineboardGame;
     game.players= [player1Id, player2Id];
     game.Status= ["Active", ""];
+    var gameStates= new GameState();
+    gameState.currentPlayerMove=1;
+    gameState.lastMove= [null, null];
+    gameState.bigBoard= [];
     game.save(function(err,savedGame){
         if(!err){
             res.json(savedGame);
@@ -203,5 +207,8 @@ function checkWin(game, recentTurn){
     var bigBoardIndex= (recentTurn/10)%10;
     var smallBoardIndex= recentTurn%10;
     var gameStates= game.gameStates;
+    var currBoard= gameStates[gameStates.length-1];
+    var bigBoard= currBoard.bigBoard[bigBoardIndex];
+    var smallBoard= bigBoard.smallBoard[smallBoardIndex];
     
 }
