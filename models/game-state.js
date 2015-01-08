@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var rowSchema = new Schema({
-	row: [Number]
+	column: [Number]
 });
 
 var smallBoardSchema   = new Schema({
@@ -13,7 +13,8 @@ var gameStateSchema = new Schema({
 	currentPlayerMove: Number,
     	lastMove: {
 	 	      board: Number,
-        	Position: Number
+        		row: Number,
+        		column: Number
     	},
     	bigBoard: [smallBoardSchema]  
 });
