@@ -168,3 +168,19 @@ var server= app.listen(3000, function(){
     var port= server.address().port;
     console.log("SERVER STARTED at http://%s:%s",host,port);
 });
+function sortStats(users){
+    var i,j;
+    var imin;
+    for(i=0; i<users.length-1; i++){
+        imin=i;
+        for(j=i+1; j<users.length-1; j++){
+            if(users[i]<users[imin]){
+                imin=i;
+            }
+        }
+    }
+    if(imin!=i){
+        prevUser= users[imin];
+        
+    }
+}
