@@ -137,7 +137,7 @@ app.get('/api/user/:id/games/past', function(req,res){
 /* Plays a turn
 // Parameters: 
 // req.param.id: id of the user playing the turn
-// req.body.turn: the actual turn that the user is playing, an integer, ie 75 means big board index 7, small board index 5
+// req.body.turn: the actual turn that the user is playing, an integer, ie 322 means big board index 2, row being 3, and column being 3, first number is 0-8, second number is 0-2, third number is 0-2
 // Returns: the new game state, complete with new board/current game state
 // Work: update board, check for win, if so update stats, return ^
 */
@@ -169,11 +169,11 @@ app.post('/api/:id/games', function(err,res){
     var gameStates= new NineboardGameState();
     gameState.currentPlayerMove=1;
     gameState.lastMove= [null, null];
+    var row1= new rowSchema();
+    row1.row=[0,0,0];
     var smallBoard1= new smallBoardSchema();
-    smallBoard1.board=[0,0,0,0,0,0,0,0,0];
-    var bigBoard1= new nineBoardSchema();
-    bigBoard1.smallBoard=[smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1,smallBoard1];
-    gameState.bigBoard= [bigBoard1];
+    smallBoard1.smallBoard=[row1,row1,row1];
+    gameState.bigBoard= [bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigboard1,bigboard1,bigBoard1];
     game.gameStates=[gameStates];
     game.save(function(err,savedGame){
         if(!err){
@@ -217,4 +217,25 @@ function checkWin(game, recentTurn){
     var bigBoard= currBoard.bigBoard[bigBoardIndex];
     var smallBoard= bigBoard.smallBoard[smallBoardIndex];
     
+    
+}
+
+//add a turn
+function(game, recentTurn, id){
+    var player=0;
+    var smallBoardIndex= Math.floor(recentTurn/100);
+    var rowIndex= math.floor((recentTurn/10)%10);
+    var columnIndex= math.floor(recentTurn%10);
+    var gameState= game.gameStates[game.gameStates-1];
+    if(game.players[0]=id){
+        player=1;
+        gameState.currentPlayerMove=2;
+    }
+    else{
+        player=2;
+        gameState.currentPlayerMove=1;
+    }
+    gamestate.bigboard[smallBoardIndex].row[rowIndex].column[columnIndex]=player;
+    gameState.lastMove= [smallBoardIndex,rowIndex,columnIndex];
+    game.gameStates.add(gameState);
 }
