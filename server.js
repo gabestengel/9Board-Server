@@ -142,16 +142,33 @@ app.get('/api/user/:id/games/past', function(req,res){
 // Work: update board, check for win, if so update stats, return ^
 */
 app.post('/api/:id/games/:gameid', function(req, res){
-    NineboardUser.findById(req.param.id, function(err){
+    var hasBeenCreated= false;
+    NineboardGame.findById(req.param.gameid, function(err,game){
         if(!err){
-            NineboardGame.find(req.param.gameid, function(err,game){
-               if(!err){
-                   res.json(game);
-                }
-                else{
-                    res.send(err);
-                }
-            });
+            addTurn(game,req.body.turn);
+            checkWin(game, req.body.turn);
+            res.json(game);
+        }
+        else{
+            res.send(err);
+        }
+    });
+});
+/*Creates a game
+//Parameters:
+//req.param.id: id of the user playing the turn
+//req.body.id: id of the other user
+//Returns: The game created
+*/
+app.post('/api/:id/games', function(err,res){
+    var player1Id= req.param.id;
+    var player2Id= req.body.id;
+    var game= new NineboardGame;
+    game.players= [player1Id, player2Id];
+    game.Status= ["Active", ""];
+    game.save(function(err,savedGame){
+        if(!err){
+            res.json(savedGame);
         }
         else{
             res.send(err);
@@ -181,4 +198,10 @@ var server= app.listen(3000, function(){
     var port= server.address().port;
     console.log("SERVER STARTED at http://%s:%s",host,port);
 });
-
+//function for checking win
+function checkWin(game, recentTurn){
+    var bigBoardIndex= (recentTurn/10)%10;
+    var smallBoardIndex= recentTurn%10;
+    var gameStates= game.gameStates;
+    
+}
