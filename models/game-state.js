@@ -1,3 +1,21 @@
 var mongoose = require('mongoose');
-var gameStateSchema = require('../schemas/game-state.js');
-module.exports = mongoose.model('GameState', gameStateSchema);
+var Schema = mongoose.Schema;
+
+var samllBoardSchema = new Schema({
+	board: [Number]
+});
+
+var nineBoardSchema   = new Schema({
+	smallBoard: [smallBoardSchema]
+});
+
+var gameStateSchema = new Schema({
+	currentPlayerMove: Number,
+    	lastMove: {
+	 	      board: Number,
+        	Position: Number
+    	},
+    	bigBoard: [nineBoardSchema]  
+});
+
+module.exports = gameStateSchema;
