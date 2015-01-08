@@ -1,7 +1,7 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var samllBoardSchema = new Schema({
+var smallBoardSchema = new Schema({
 	board: [Number]
 });
 
