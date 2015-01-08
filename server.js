@@ -163,24 +163,22 @@ app.post('/api/:id/games/:gameid', function(req, res){
 // Paramters: none
 // Returns: leaderboard data, an array of all users with their statistics, sorted from highest to lowest
 */
+app.get("/api/leaderboard", function(err,res){
+    NineboardUser.find(function(err,users){
+        if(!err){
+            users.sort(function(a,b){
+                return b.wins-a.wins;
+            });
+            res.send(users);
+        }
+        else{
+            res.send(err);
+        }
+    });
+});
 var server= app.listen(3000, function(){
     var host= server.address().address;
     var port= server.address().port;
     console.log("SERVER STARTED at http://%s:%s",host,port);
 });
-function sortStats(users){
-    var i,j;
-    var imin;
-    for(i=0; i<users.length-1; i++){
-        imin=i;
-        for(j=i+1; j<users.length-1; j++){
-            if(users[i]<users[imin]){
-                imin=i;
-            }
-        }
-    }
-    if(imin!=i){
-        prevUser= users[imin];
-        
-    }
-}
+
