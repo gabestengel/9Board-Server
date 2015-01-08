@@ -1,12 +1,12 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
-var smallBoardSchema = new Schema({
-	board: [Number]
+var rowSchema = new Schema({
+	row: [Number]
 });
 
-var nineBoardSchema   = new Schema({
-	smallBoard: [smallBoardSchema]
+var smallBoardSchema   = new Schema({
+	row: [row]
 });
 
 var gameStateSchema = new Schema({
@@ -15,7 +15,7 @@ var gameStateSchema = new Schema({
 	 	      board: Number,
         	Position: Number
     	},
-    	bigBoard: [nineBoardSchema]  
+    	bigBoard: [smallBoardSchema]  
 });
 
 module.exports = gameStateSchema;
