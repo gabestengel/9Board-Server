@@ -241,6 +241,8 @@ function addTurn(game, recentTurn, id){
         gameState.currentPlayerMove=1;
     }
     gamestate.bigboard[smallBoardIndex].row[rowIndex].column[columnIndex]=player;
-    gameState.lastMove= [smallBoardIndex,rowIndex,columnIndex];
+    gameState.lastMove.board= smallBoardIndex;
+    gameState.lastMove.row= rowIndex;
+    gameState.lastMove.column=columnIndex;
     game.gameStates.add(gameState);
 }
