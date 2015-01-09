@@ -1,7 +1,7 @@
 var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
-//mongoose.connect('mongodb://localhost/test');
+mongoose.connect('mongodb://localhost/test');
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var NineboardGameState = require('./models/game-state.js');
@@ -146,7 +146,9 @@ app.post('/api/:id/games/:gameid', function(req, res){
     NineboardGame.findById(req.param.gameid, function(err,game){
         if(!err){
             addTurn(game,req.body.turn);
-            checkWin(game, req.body.turn);
+            if(checkWin(game)){
+                game.gameStatus.ongoing="Done";
+            }
             res.json(game);
         }
         else{
@@ -209,19 +211,22 @@ var server= app.listen(3000, function(){
 });
 
 //function for checking win
-function checkWin(game, recentTurn){
-    var bigBoardIndex= (recentTurn/10)%10;
-    var smallBoardIndex= recentTurn%10;
-    var gameStates= game.gameStates;
-    var currBoard= gameStates[gameStates.length-1];
-    var bigBoard= currBoard.bigBoard[bigBoardIndex];
-    var smallBoard= bigBoard.smallBoard[smallBoardIndex];
-    
-    
+function checkWin(game){
+    var gamestate= game.gameStates[game.gameStates.length-1];
+    var board= gamestate.bigBoard[gamestate.lastMove.board];
+    if(board.row[0]==board.row[1] && board.row[1]==board.row[2]){
+        return true;
+    }
+    else if(board.row[gamestate.lastMove.row].column[0]==board.row[gamestate.lastMove.row].column[1] && board.row[gamestate.lastMove.row].column[0]==board.row[gamestate.lastMove.row].column[2]){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 //add a turn
-function(game, recentTurn, id){
+function addTurn(game, recentTurn, id){
     var player=0;
     var smallBoardIndex= Math.floor(recentTurn/100);
     var rowIndex= math.floor((recentTurn/10)%10);
