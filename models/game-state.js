@@ -6,7 +6,7 @@ var rowSchema = new Schema({
 });
 
 var smallBoardSchema   = new Schema({
-	row: [row]
+	row: [rowSchema]
 });
 
 var gameStateSchema = new Schema({
