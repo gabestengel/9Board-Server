@@ -214,10 +214,16 @@ var server= app.listen(3000, function(){
 function checkWin(game){
     var gamestate= game.gameStates[game.gameStates.length-1];
     var board= gamestate.bigBoard[gamestate.lastMove.board];
-    if(board.row[0]==board.row[1] && board.row[1]==board.row[2]){
+    if(board.row[0].column[gamestate.lastMove.column]==board.row[1].column[gamestate.lastMove.column] && board.row[1].column[gamestate.lastMove.column]==board.row[2].column[gamestate.lastMove.column]){
         return true;
     }
     else if(board.row[gamestate.lastMove.row].column[0]==board.row[gamestate.lastMove.row].column[1] && board.row[gamestate.lastMove.row].column[0]==board.row[gamestate.lastMove.row].column[2]){
+        return true;
+    }
+    else if(board.row[0].column[0]==board.row[1].column[1] && board.row[0].column[0]==board.row[2].column[2]){
+        return true;
+    }
+    else if(board.row[2].column[0]==board.row[1].column[1] && board.row[2].column[0]==board.row[0].column[2]){
         return true;
     }
     else{
