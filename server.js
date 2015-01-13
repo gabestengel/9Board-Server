@@ -31,12 +31,21 @@ app.post('/api/user', function(req, res){
         }
     });
 });
-
+app.get('/api/users', function(req,res){
+    NineboardUser.find(function(err,person){
+        if(!err){
+            res.json(person);
+        }
+        else{
+            res.send(err);
+        }
+    });
+});
 /* later */
 app.get('/api/user/:id/stats', function(req,res){
-    NineboardUser.findById(req.params.id, function(err,person){
+    NineboardUser.findById(req.params.id, function(err, person){
         if(!err){
-            res.json(person.stats);
+            res.json(person);
         }
         else{
             res.send(err);
