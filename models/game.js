@@ -1,6 +1,6 @@
 var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
-var gameStateSchema = require('../schemas/game-state.js');
+var gameStateSchema = require('../models/game-state.js');
 
 var gameSchema   = new Schema({
 	    players: [String],
