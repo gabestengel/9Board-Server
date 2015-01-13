@@ -71,9 +71,9 @@ app.get('/api/user/:id/games2/active', function(req,res){
    NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err,game){
         if(!err){
             var games= new Array();
-            for(var i=0; i<game.length; i++){
-                if(JSON.stringify(game[i].gameStatus.ongoing)="Active"){
-                    games.add(game[i]);
+            for(var i=0; i<=game.length-1; i++){
+                if(game[i].gameStatus.ongoing="Active"){
+                    games.push(game[i]);
                 }
             }
             res.json(games);
@@ -121,7 +121,7 @@ app.get('/api/user/:id/games2/past', function(req,res){
             var games= new Array();
             for(var i=0; i<game.length-1; i++){
                 if(game[i].gameStatus.ongoing="Done"){
-                    games.add(game[i]);
+                    games.push(game[i]);
                 }
             }
             res.json(games);
