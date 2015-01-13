@@ -1,9 +1,18 @@
 var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
+var path = require('path');
 mongoose.connect('mongodb://localhost:27017/9board');
+
+// all environments
+app.set('port', 3000);
+app.use(express.static(path.join(__dirname, 'public')));
 var multer= require('multer');
 var bodyParser= require('body-parser');
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true}));
+app.use(multer());
+
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var NineboardGameState = require('./models/game-state.js');
@@ -19,11 +28,29 @@ var smallBoardSchema   = new Schema({
 });
 mongoose.model('smallBoard', smallBoardSchema);
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true}));
-app.use(multer());
+
+
+// request logging
+app.use(function(req, res, next) {
+	console.log("----------");
+	console.log("request: " + req.path + ", protocol: " + req.protocol);
+	next();
+});
+
+// error logging
+app.use(function(err, req, res, next) {
+	console.log("ERROR: " + err + ".. for path: " + req.path);
+	next();
+})
+
+// landing page
+app.get("/", function(req, res) {
+	console.log("GET landing page");
+	res.json({"success": true});
+});
 
 /* Creates a new user in the server, when someone logs into the app for the first time
+// EDIT-- The app doesn't know whether the user is a new user, so this route is called *every time a user logs in*. If a user with the facebook id already exists, it returns the id of the user and that's it, otherwise it creates a new user.
 // Parameters:
 // req.body.facebookId: the facebook id for the user
 // req.body.deviceId: the device id for the user
@@ -32,21 +59,36 @@ app.use(multer());
 // Work: insert new user into database
 */
 app.post('/api/user', function(req, res){
-    var facebookId= req.body.facebookId;
-    var deviceId= req.body.deviceId;
-    var name= req.body.name;
-    var user= new NineboardUser();
-    user.name= name;
-    user.deviceId= deviceId;
-    user.facebookId= facebookId;
-    user.save(function(err,savedUser){
-        if(!err){
-            res.send(savedUser.id);
-        }
-        else {
-            res.send(err);
-        }
-    });
+	var facebookId = req.body.facebookId;
+	NineboardUser.findOne({facebookId: facebookId}, function(err, user) {
+		if (err) {
+			console.log("error: " + err);
+			res.send(err);
+		}
+		else if (user) {
+			console.log("user already exists: " + user.id);
+			res.json({"userId": user.id});
+		}
+		else {
+			console.log("no user exists, creating new");
+			var deviceId = req.body.deviceId;
+		    var name = req.body.name;
+		    var user = new NineboardUser();
+		    user.name = name;
+		    user.deviceId = deviceId;
+		    user.facebookId = facebookId;
+		    user.save(function(err, savedUser) {
+		        if(!err){
+					console.log("new user id: " + savedUser.id);
+		            res.json({"userId": savedUser.id});
+		        }
+		        else {
+					console.log("error saving user: " + err);
+		            res.json(err);
+		        }
+		    });
+		}
+	});
 });
 
 /* later */
@@ -56,6 +98,7 @@ app.get('/api/user/:id/stats', function(req,res){
             res.json(person.stats);
         }
         else{
+			console.log("error getting stats: " + err);
             res.send(err);
         }
     });
