@@ -216,17 +216,23 @@ app.post('/api/:id/:player2id/games', function(req,res){
     
     var player1Id= req.param('id');
     var player2Id= req.param('player2id');
-    var boards1= makeBoard();
-    var boards2= makeBoard();
-    var boards3= makeBoard();
+    var boards1= makeBoard(function(array){
+        return array;
+    });
+    var boards2= makeBoard(function(array){
+        return array;
+    });
+    var boards3= makeBoard(function(array){
+        return array;
+    });
     var game= new NineboardGame();
-    //game.gameStates= [boards1[0], boards1[1], boards1[2], boards2[0], boards2[1], boards2[2], boards3[0], boards3[1], boards3[2]];
-    res.json(boards1[0]);
+    game.gameStates= [boards1[0], boards1[1], boards1[2], boards2[0], boards2[1], boards2[2], boards3[0], boards3[1], boards3[2]];
+    
     game.players= [player1Id, player2Id];
     game.gameStatus.ongoing= 'Active';
     game.gameStatus.winner= 'null';
 
-    /*
+    
     game.save(function(err, savedGame){
         if(!err){
             res.json(savedGame);
@@ -235,7 +241,7 @@ app.post('/api/:id/:player2id/games', function(req,res){
             res.send(err);
         }
     });
-    */
+    
 });
 
 /* Leaderboard
@@ -308,7 +314,7 @@ function addTurn(game, recentTurn, id){
         }
     });
 }
-function makeBoard(){
+function makeBoard(callBackFunction){
     var row1= new NineboardRow();
     var row2= new NineboardRow();
     var row3= new NineboardRow();
@@ -386,8 +392,8 @@ function makeBoard(){
                                                         if(!err){
                                                             smallBoard3Id= savedBoard.id;
                                                         }
-                                                        console.log(smallBoard1.row[0]);
-                                                        return [smallBoard1Id, smallBoard2Id, smallBoard3Id];
+                                                        var someArray= [smallBoard1Id, smallBoard2Id, smallBoard3Id];
+                                                        callBackFunction(someArray);
                                                     });
                                                 });
                                             });
@@ -400,7 +406,6 @@ function makeBoard(){
             });
         });
     });
-    
     
     
 }
