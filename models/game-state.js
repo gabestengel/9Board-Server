@@ -19,4 +19,4 @@ var gameStateSchema = new Schema({
     	bigBoard: [smallBoardSchema]  
 });
 
-module.exports = gameStateSchema;
+module.exports = mongoose.model('gameState', gameStateSchema);

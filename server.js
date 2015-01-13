@@ -2,9 +2,26 @@ var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost:27017/9board');
+var multer= require('multer');
+var bodyParser= require('body-parser');
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var NineboardGameState = require('./models/game-state.js');
+var Schema = mongoose.Schema;
+
+//annoying schema stuff
+var rowSchema = new Schema({
+	column: [Number]
+});
+mongoose.model('Row', rowSchema);
+var smallBoardSchema   = new Schema({
+	row: [rowSchema]
+});
+mongoose.model('smallBoard', smallBoardSchema);
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true}));
+app.use(multer());
 
 /* Creates a new user in the server, when someone logs into the app for the first time
 // Parameters:
@@ -31,21 +48,12 @@ app.post('/api/user', function(req, res){
         }
     });
 });
-app.get('/api/users', function(req,res){
-    NineboardUser.find(function(err,person){
-        if(!err){
-            res.json(person);
-        }
-        else{
-            res.send(err);
-        }
-    });
-});
+
 /* later */
 app.get('/api/user/:id/stats', function(req,res){
     NineboardUser.findById(req.params.id, function(err, person){
         if(!err){
-            res.json(person);
+            res.json(person.stats);
         }
         else{
             res.send(err);
@@ -154,7 +162,7 @@ app.post('/api/:id/games/:gameid', function(req, res){
     var hasBeenCreated= false;
     NineboardGame.findById(req.param.gameid, function(err,game){
         if(!err){
-            addTurn(game,req.body.turn);
+            addTurn(game,req.body.turn, req.param.id);
             if(checkWin(game)){
                 game.gameStatus.ongoing="Done";
             }
@@ -168,24 +176,32 @@ app.post('/api/:id/games/:gameid', function(req, res){
 /*Creates a game
 //Parameters:
 //req.param.id: id of the user playing the turn
-//req.body.id: id of the other user
+//req.param.player2id: id of the other user
 //Returns: The game created
 */
-app.post('/api/:id/games', function(err,res){
-    var player1Id= req.param.id;
-    var player2Id= req.body.id;
-    var game= new NineboardGame;
-    game.players= [player1Id, player2Id];
-    game.Status= ["Active", ""];
+app.post('/api/:id/:player2id/games', function(req,res){
+    
+    var player1Id= req.param('id');
+    var player2Id= req.param('player2id');
+    var row= mongoose.model('Row');
+    var smallBoard= mongoose.model('smallBoard');
+    var game= new NineboardGame();
     var gameStates= new NineboardGameState();
-    gameState.currentPlayerMove=1;
-    gameState.lastMove= [null, null];
-    var row1= new rowSchema();
-    row1.row=[0,0,0];
-    var smallBoard1= new smallBoardSchema();
-    smallBoard1.smallBoard=[row1,row1,row1];
-    gameState.bigBoard= [bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigBoard1,bigboard1,bigboard1,bigBoard1];
-    game.gameStates=[gameStates];
+    
+    row.column= [0,0,0];
+    
+    smallBoard.row= [row,row,row];
+    
+    gameStates.currentPlayerMove= 1;
+    gameStates.lastMove= [null,null, null];
+    gameStates.bigBoard= [smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard];
+    
+    game.gameStates= [gameStates];
+    game.players.player1Id= player1Id;
+    game.players.player2Id= player2Id;
+    game.gameStatus.ongoing= 'Active';
+    game.gameStatus.winner= 'null';
+
     game.save(function(err,savedGame){
         if(!err){
             res.json(savedGame);
@@ -200,7 +216,7 @@ app.post('/api/:id/games', function(err,res){
 // Paramters: none
 // Returns: leaderboard data, an array of all users with their statistics, sorted from highest to lowest
 */
-app.get("/api/leaderboard", function(err,res){
+app.get("/api/leaderboard", function(req,res){
     NineboardUser.find(function(err,users){
         if(!err){
             users.sort(function(a,b){
@@ -244,8 +260,8 @@ function checkWin(game){
 function addTurn(game, recentTurn, id){
     var player=0;
     var smallBoardIndex= Math.floor(recentTurn/100);
-    var rowIndex= math.floor((recentTurn/10)%10);
-    var columnIndex= math.floor(recentTurn%10);
+    var rowIndex= Math.floor((recentTurn/10)%10);
+    var columnIndex= Math.floor(recentTurn%10);
     var gameState= game.gameStates[game.gameStates-1];
     if(game.players[0]=id){
         player=1;
