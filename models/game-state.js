@@ -10,7 +10,7 @@ var smallBoardSchema   = new Schema({
 });
 
 var gameStateSchema = new Schema({
-	currentPlayerMove: Number,
+	   currentPlayerMove: Number,
     	lastMove: {
 	 	      board: Number,
         		row: Number,

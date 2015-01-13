@@ -6,18 +6,28 @@ var multer= require('multer');
 var bodyParser= require('body-parser');
 var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
-var NineboardGameState = require('./models/game-state.js');
+var ObjectId= mongoose.Schema.Types.ObjectId;
 var Schema = mongoose.Schema;
 
 //annoying schema stuff
 var rowSchema = new Schema({
 	column: [Number]
 });
-mongoose.model('Row', rowSchema);
+var NineboardRow= mongoose.model('Row', rowSchema);
 var smallBoardSchema   = new Schema({
-	row: [rowSchema]
+	row: [{type: ObjectId, ref:rowSchema}]
 });
-mongoose.model('smallBoard', smallBoardSchema);
+var NineboardSmallBoard= mongoose.model('smallBoard', smallBoardSchema);
+var gameStateSchema = new Schema({
+	    currentPlayerMove: Number,
+    	lastMove: {
+	 	      board: Number,
+        		row: Number,
+        		column: Number
+    	},
+    	bigBoard: [{type: ObjectId, ref:smallBoardSchema}]  
+});
+var NineboardGameState= mongoose.model('NineboardGameState', gameStateSchema);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true}));
@@ -119,7 +129,7 @@ app.get('/api/user/:id/games2/past', function(req,res){
     NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err, game){
         if(!err){
             var games= new Array();
-            for(var i=0; i<game.length-1; i++){
+            for(var i=0; i<game.length; i++){
                 if(game[i].gameStatus.ongoing="Done"){
                     games.push(game[i]);
                 }
@@ -139,17 +149,14 @@ app.get('/api/user/:id/games2/past', function(req,res){
 // Returns: the new game state, complete with new board/current game state
 // Work: update board, check for win, if so update stats, return ^
 */
-app.post('/api/:id/games/:gameid', function(req, res){
-    NineboardGame.findById(req.param.gameid, function(err,game){
+app.post('/api/:id/games2/:gameId', function(req, res){
+    NineboardGame.findById(req.params.gameId, function(err,game){
         if(!err){
-            res.json(game);
-            /*
             addTurn(game, req.body.turn, req.param.id);
             if(checkWin(game)){
                 game.gameStatus.ongoing="Done";
             }
             res.json(game);
-            */
         }
         else{
             res.send(err);
@@ -166,25 +173,18 @@ app.post('/api/:id/:player2id/games', function(req,res){
     
     var player1Id= req.param('id');
     var player2Id= req.param('player2id');
-    var row= mongoose.model('Row');
-    var smallBoard= mongoose.model('smallBoard');
+    var boards1= makeBoard();
+    var boards2= makeBoard();
+    var boards3= makeBoard();
     var game= new NineboardGame();
-    var gameStates= new NineboardGameState();
-    
-    row.column= [0,0,0];
-    
-    smallBoard.row= [row,row,row];
-    
-    gameStates.currentPlayerMove= 1;
-    gameStates.lastMove= [null,null, null];
-    gameStates.bigBoard= [smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard];
-    
-    game.gameStates= [gameStates];
+    //game.gameStates= [boards1[0], boards1[1], boards1[2], boards2[0], boards2[1], boards2[2], boards3[0], boards3[1], boards3[2]];
+    res.json(boards1[0]);
     game.players= [player1Id, player2Id];
     game.gameStatus.ongoing= 'Active';
     game.gameStatus.winner= 'null';
 
-    game.save(function(err,savedGame){
+    /*
+    game.save(function(err, savedGame){
         if(!err){
             res.json(savedGame);
         }
@@ -192,6 +192,7 @@ app.post('/api/:id/:player2id/games', function(req,res){
             res.send(err);
         }
     });
+    */
 });
 
 /* Leaderboard
@@ -244,7 +245,7 @@ function addTurn(game, recentTurn, id){
     var smallBoardIndex= Math.floor(recentTurn/100);
     var rowIndex= Math.floor((recentTurn/10)%10);
     var columnIndex= Math.floor(recentTurn%10);
-    var gameState= game.gameStates[game.gameStates-1];
+    var gameState= game.gameStates[game.gameStates.length-1];
     if(game.players[0]=id){
         player=1;
         gameState.currentPlayerMove=2;
@@ -253,9 +254,110 @@ function addTurn(game, recentTurn, id){
         player=2;
         gameState.currentPlayerMove=1;
     }
-    gamestate.bigboard[smallBoardIndex].row[rowIndex].column[columnIndex]=player;
+    gameState.bigBoard[smallBoardIndex].row[rowIndex].column[columnIndex]=player;
     gameState.lastMove.board= smallBoardIndex;
     gameState.lastMove.row= rowIndex;
     gameState.lastMove.column=columnIndex;
-    game.gameStates.add(gameState);
+    game.gameStates.push(gameState);
+    game.save(function(err){
+        if(err){
+            res.send(err);
+        }
+    });
+}
+function makeBoard(){
+    var row1= new NineboardRow();
+    var row2= new NineboardRow();
+    var row3= new NineboardRow();
+    var row4= new NineboardRow();
+    var row5= new NineboardRow();
+    var row6= new NineboardRow();
+    var row7= new NineboardRow();
+    var row8= new NineboardRow();
+    var row9= new NineboardRow();
+    var row1Id, row2Id, row3Id, row4Id, row5Id, row6Id, row7Id, row8Id, row9Id;
+    var smallBoard1= new NineboardSmallBoard();
+    var smallBoard2= new NineboardSmallBoard();
+    var smallBoard3= new NineboardSmallBoard();
+    var game= new NineboardGame();
+    var gameStates= new NineboardGameState();
+    
+    //first chunk
+    row1.column= [0,0,0];
+    row1.save(function(err, savedRow){
+        if(!err){
+            row1Id= savedRow.id;
+        }
+        row2.column= [0,0,0];
+        row2.save(function(err, savedRow){
+            if(!err){
+                row2Id= savedRow.id;
+            }
+            row3.column= [0,0,0];
+            row3.save(function(err, savedRow){
+                if(!err){
+                    row3Id= savedRow.id;
+                }
+                    row4.column= [0,0,0];
+                    row4.save(function(err, savedRow){
+                        if(!err){
+                            row4Id= savedRow.id;
+                        }
+                        row5.column= [0,0,0];
+                        row5.save(function(err, savedRow){
+                            if(!err){
+                                row5Id= savedRow.id;
+                            }
+                            row6.column= [0,0,0];
+                            row6.save(function(err, savedRow){
+                                if(!err){
+                                    row6Id= savedRow.id;
+                                }
+                                row7.column= [0,0,0];
+                                row7.save(function(err, savedRow){
+                                    if(!err){
+                                        row7Id= savedRow.id;
+                                    }
+                                    row8.column= [0,0,0];
+                                    row8.save(function(err, savedRow){
+                                        if(!err){
+                                            row8Id= savedRow.id;
+                                        }
+                                        row9.column= [0,0,0];
+                                        row9.save(function(err, savedRow){
+                                            if(!err){
+                                                row9Id= savedRow.id;
+                                            }
+                                            smallBoard1.row= [row1Id, row2Id, row3Id];
+                                            smallBoard1.save(function(err, savedBoard){
+                                                if(!err){
+                                                    smallBoard1Id= savedBoard.id;
+                                                }
+                                                smallBoard2.row= [row4Id, row5Id, row6Id];
+                                                smallBoard2.save(function(err, savedBoard){
+                                                    if(!err){
+                                                        smallBoard2Id= savedBoard.id;
+                                                    }
+                                                    smallBoard3.row= [row7Id, row8Id, row9Id];
+                                                    smallBoard3.save(function(err, savedBoard){
+                                                        if(!err){
+                                                            smallBoard3Id= savedBoard.id;
+                                                        }
+                                                        console.log(smallBoard1.row[0]);
+                                                        return [smallBoard1Id, smallBoard2Id, smallBoard3Id];
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    }); 
+            });
+        });
+    });
+    
+    
+    
 }
