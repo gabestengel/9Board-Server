@@ -3,11 +3,7 @@ var Schema       = mongoose.Schema;
 var gameStateSchema = require('../schemas/game-state.js');
 
 var gameSchema   = new Schema({
-	players: {
-        	//Player1 is Xs, Player 2 is Os
-        	player1Id: String,
-        	player2Id: String
-    	},
+	    players: [String],
     	gameStatus: {
 		//Active, Paused, 12Quit, Done
         	ongoing: String,

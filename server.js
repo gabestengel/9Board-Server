@@ -67,25 +67,20 @@ app.get('/api/user/:id/stats', function(req,res){
 // Returns: full data about all games of the user that are active
 // Work: none
 */
-app.get('/api/user/:id/games/active', function(req,res){
-    NineboardUser.findById(req.params.id,function(err, person){
-       if(!err){
-           NineboardGame.find({'players':person.DeviceID}, function(err,game){
-                if(!err){
-                    for(var i=0; i<game.length; i++){
-                        if(game.gamestatus.ongoing=JSON.parse("Active")){
-                            res.json(game);
-                        }
-                    }
+app.get('/api/user/:id/games2/active', function(req,res){
+   NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err,game){
+        if(!err){
+            var games= new Array();
+            for(var i=0; i<game.length; i++){
+                if(JSON.stringify(game[i].gameStatus.ongoing)="Active"){
+                    games.add(game[i]);
                 }
-                else{
-                    res.send(err);
-                }
-            });
-       }
-       else{
-           res.send(err);
-       }
+            }
+            res.json(games);
+        }
+        else{
+            res.send(err);
+        }
     });
 });
 
@@ -97,53 +92,39 @@ app.get('/api/user/:id/games/active', function(req,res){
 // Work: none
 */
 app.get('/api/user/:id/games/:gameId', function(req,res){
-    NineboardUser.findById(req.params.id, function(err, person){
+    NineboardGame.findById(req.params.gameId,function(err, game){
         if(!err){
-            NineboardGame.find({'players':id},function(err, game){
-                for(var i=0; i<game.length; i++){
-                    if(game.gameID=req.params.gameid){
-                        res.json(game);
-                    }
-                }
-            });
+            res.json(game);
+        }
+        else{
+            res.send(err);
+        }
+
+    });
+});
+
+app.get('/api/user/:id/games2/all', function(req,res){
+    
+    NineboardGame.find( { players: { $in: [req.param('id')] }  }, function(err, game){
+        if(!err){
+            res.json(game);
         }
         else{
             res.send(err);
         }
     });
 });
-app.get('/api/user/:id/games/all', function(req,res){
-    NineboardUser.findById(req.param.id, function(err, person){
+
+app.get('/api/user/:id/games2/past', function(req,res){
+    NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err, game){
         if(!err){
-            NineboardGame.find({'players':id}, function(err, game){
-                if(!err){
-                    res.json(game);
+            var games= new Array();
+            for(var i=0; i<game.length-1; i++){
+                if(game[i].gameStatus.ongoing="Done"){
+                    games.add(game[i]);
                 }
-                else{
-                    res.send(err);
-                }
-            });
-        }
-        else{
-            res.send(err);
-        }
-    });
-});
-app.get('/api/user/:id/games/past', function(req,res){
-    NineboardUser.findById(req.param.id, function(err, person){
-        if(!err){
-            NineboardGame.find({'players': id}, function(err, game){
-                if(!err){
-                    for(var i=0; i<game.length; i++){
-                        if(game.gamestatus.ongoing=JSON.parse("Done")){
-                            res.json(game);
-                        }
-                    }
-                }
-                else{
-                    res.send(err);
-                }
-            });
+            }
+            res.json(games);
         }
         else{
             res.send(err);
@@ -159,14 +140,16 @@ app.get('/api/user/:id/games/past', function(req,res){
 // Work: update board, check for win, if so update stats, return ^
 */
 app.post('/api/:id/games/:gameid', function(req, res){
-    var hasBeenCreated= false;
     NineboardGame.findById(req.param.gameid, function(err,game){
         if(!err){
-            addTurn(game,req.body.turn, req.param.id);
+            res.json(game);
+            /*
+            addTurn(game, req.body.turn, req.param.id);
             if(checkWin(game)){
                 game.gameStatus.ongoing="Done";
             }
             res.json(game);
+            */
         }
         else{
             res.send(err);
@@ -197,8 +180,7 @@ app.post('/api/:id/:player2id/games', function(req,res){
     gameStates.bigBoard= [smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard, smallBoard];
     
     game.gameStates= [gameStates];
-    game.players.player1Id= player1Id;
-    game.players.player2Id= player2Id;
+    game.players= [player1Id, player2Id];
     game.gameStatus.ongoing= 'Active';
     game.gameStatus.winner= 'null';
 
