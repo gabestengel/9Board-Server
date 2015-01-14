@@ -7,7 +7,11 @@ var gameSchema   = new Schema({
 	    players: [String],
 		active: {type:Boolean, default:true},
 		winnerId: String,
-    	fullBoard: []
+		lastMove: {
+			bigBoardPosition: Number,
+			smallBoardPosition: Number
+		},
+    	fullBoard: [],
 });
 
 module.exports = mongoose.model('game', gameSchema);

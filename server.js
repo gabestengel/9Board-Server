@@ -167,15 +167,17 @@ app.get('/api/user/:id/games2/past', function(req,res){
 /* Plays a turn
 // Parameters: 
 // req.param.id: id of the user playing the turn
-// req.body.turn: the actual turn that the user is playing, an integer, ie 322 means big board index 2, row being 3, and column being 3, first number is 0-8, second number is 0-2, third number is 0-2
+// req.body.turn:
 // Returns: the new game state, complete with new board/current game state
 // Work: update board, check for win, if so update stats, return ^
 */
-app.post('/api/:id/games2/:gameId', function(req, res){
-	var userId = req.param.id;
-	var gameId = req.param.gameId;
+app.post('/api/:id/game/:gameId/turn', function(req, res){
+	var userId = req.param('id');
+	var gameId = req.param('gameId');
 	var turnBigBoardPosition = req.body.big_board_position;
 	var turnSmallBoardPosition = req.body.small_board_position;
+	
+	console.log(userId + "--" + gameId);
 	
     NineboardGame.findById(gameId, function(err,game) {
 		if(!err && game){
