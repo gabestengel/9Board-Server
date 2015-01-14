@@ -216,32 +216,28 @@ app.post('/api/:id/:player2id/games', function(req,res){
     
     var player1Id= req.param('id');
     var player2Id= req.param('player2id');
-    var boards1= makeBoard(function(array){
-        return array;
-    });
-    var boards2= makeBoard(function(array){
-        return array;
-    });
-    var boards3= makeBoard(function(array){
-        return array;
-    });
     var game= new NineboardGame();
-    game.gameStates= [boards1[0], boards1[1], boards1[2], boards2[0], boards2[1], boards2[2], boards3[0], boards3[1], boards3[2]];
+    var gameState= new NineboardGameState();
     
     game.players= [player1Id, player2Id];
     game.gameStatus.ongoing= 'Active';
     game.gameStatus.winner= 'null';
-
-    
-    game.save(function(err, savedGame){
-        if(!err){
-            res.json(savedGame);
-        }
-        else{
-            res.send(err);
-        }
+    makeBoard(function(board1){
+        makeBoard(function(board2){
+            makeBoard(function(board3){
+                gameState.bigBoard= board1.concat(board2.concat(board3));
+                game.gameStates= [gameState.id];
+                game.save(function(err, savedGame){
+                    if(!err){
+                        res.json(savedGame);
+                    }
+                    else{
+                        res.send(err);
+                    }
+                });
+            });
+        });
     });
-    
 });
 
 /* Leaderboard
