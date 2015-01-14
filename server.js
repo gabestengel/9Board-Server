@@ -141,13 +141,12 @@ app.get('/api/user/:id/games2/active', function(req,res){
 // Parameters:
 // req.params.id: the user id
 // req.params.gameId: id of the the game we are looking for
-// Returns: all data about a particular game
+// Returns: game board
 // Work: none
 */
 app.get('/api/user/:id/games/:gameId', function(req,res){
     NineboardGame.findById(req.params.gameId,function(err, game){
         if(!err){
-            res.json(game);
         }
         else{
             res.send(err);
@@ -219,10 +218,15 @@ app.post('/api/:id/:player2id/games', function(req,res){
     var player2Id= req.param('player2id');
     var game= new NineboardGame();
     var gameState= new NineboardGameState();
+    var player2;
+    NineboardUser.findOne({facebookId:player2Id}, function(err, user){
+        player2=user;
+    });
     
-    game.players= [player1Id, player2Id];
+    game.players= [player1Id, user.id];
     game.gameStatus.ongoing= 'Active';
     game.gameStatus.winner= 'null';
+    
     makeBoard(function(board1){
         makeBoard(function(board2){
             makeBoard(function(board3){
@@ -455,4 +459,19 @@ function makeBoard(callBackFunction){
     });
     
     
+}
+
+function formFullBoard(game, dontcallmeMaybe){
+    var returnArray = new Array(new Array( new Array()));
+    NineboardGameState.findById(game.gameStates[game.gameStates.length-1], function(err, gameState){
+        for(var i=0; i<9; i++){
+            NineboardSmallBoard.findById(gameState.bigBoard[i], function(err, smallBoard){
+                for(var j=0; j<3; i++){
+                    NineboardRow.findById(smallBoard.row[i], function(err, row){
+                        returnArray[i][j].push(row);
+                    });
+                }
+            });
+        }
+    });
 }
