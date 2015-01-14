@@ -15,7 +15,10 @@ var gameSchema   = new Schema({
 			bigBoardPosition: {type: Number, default:-1},
 			smallBoardPosition: Number,
 		},
+
+		
     	fullBoard: [],
+		
 });
 
 module.exports = mongoose.model('game', gameSchema);

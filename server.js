@@ -200,18 +200,41 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 				game.currentTurnId = game.playerIds[0];
 			}
 			console.log("game: " + game);
-			
 			game.markModified('fullBoard');
-			game.save(function(err, savedGame) {
-				if (err) {
-					res.send(err);
-					console.log(err);
-				}
-				else {
-					res.json(savedGame);
-					console.log("savedgame: " + game);
-				}
-			});
+			
+			if (userDidWin(game)) {
+				console.log("user won!!!");
+				game.active = false;
+				game.winnerId = userId;
+				
+				
+				
+				game.save(function(err, savedGame) {
+					if (err) {
+						res.send(err);
+						console.log(err);
+					}
+					else {
+						res.json(savedGame);
+						console.log("savedgame: " + savedGame);
+					}
+					return;
+				});
+			}
+			else {
+				game.save(function(err, savedGame) {
+					if (err) {
+						res.send(err);
+						console.log(err);
+					}
+					else {
+						res.json(savedGame);
+						console.log("savedgame: " + game);
+					}
+				});
+			} 
+			
+			
             //if(checkWin(game)){
                 //game.gameStatus.ongoing="Done";
             //}
@@ -290,6 +313,48 @@ var server= app.listen(3000, function(){
     var port= server.address().port;
     console.log("SERVER STARTED at http://%s:%s",host,port);
 });
+
+function userDidWin(game) {
+	for (var i = 0; i < 9; i++) {
+		var grid = game.fullBoard[i];
+		// horizontal
+		if (grid[0] == grid[1] && grid[1] == grid[2] && grid[2] != 0) {
+			console.log("win1");
+			return true;
+		}
+		if (grid[3] == grid[4] && grid[4] == grid[5] && grid[5] != 0) {
+			console.log("win2");
+			return true;
+		}
+		if (grid[6] == grid[7] && grid[7] == grid[8] && grid[8] != 0) {
+			console.log("win3");
+			return true;
+		}
+		// vertical
+		if (grid[0] == grid[3] && grid[3] == grid[6] && grid[6] != 0) {
+			console.log("win4");
+			return true;
+		}
+		if (grid[1] == grid[4] && grid[4] == grid[7] && grid[7] != 0) {
+			console.log("win5");
+			return true;
+		}
+		if (grid[2] == grid[5] && grid[5] == grid[8] && grid[8] != 0) {
+			console.log("win6");
+			return true;
+		}
+		// didagonal
+		if (grid[0] == grid[4] && grid[4] == grid[8] && grid[8] != 0) {
+			console.log("win7");
+			return true;
+		}
+		if (grid[2] == grid[4] && grid[4] == grid[6] && grid[6] != 0) {
+			console.log("win8");
+			return true;
+		}
+	}
+	return false;
+}
 
 //function for checking win
 function checkWin(game){
