@@ -18,26 +18,6 @@ var NineboardGame = require('./models/game.js');
 var ObjectId= mongoose.Schema.Types.ObjectId;
 var Schema = mongoose.Schema;
 
-//annoying schema stuff
-var rowSchema = new Schema({
-	column: [Number]
-});
-var NineboardRow= mongoose.model('NineBoardRow', rowSchema);
-var smallBoardSchema   = new Schema({
-	row: [{type: ObjectId, ref:rowSchema}]
-});
-var NineboardSmallBoard= mongoose.model('NineBoardSmallBoard', smallBoardSchema);
-var gameStateSchema = new Schema({
-	    currentPlayerMove: Number,
-    	lastMove: {
-	 	      board: Number,
-        		row: Number,
-        		column: Number
-    	},
-    	bigBoard: [{type: ObjectId, ref:smallBoardSchema}]  
-});
-var NineboardGameState= mongoose.model('NineboardGameState', gameStateSchema);
-
 
 
 // request logging
@@ -191,18 +171,36 @@ app.get('/api/user/:id/games2/past', function(req,res){
 // Returns: the new game state, complete with new board/current game state
 // Work: update board, check for win, if so update stats, return ^
 */
-app.post('/api/:id/games2/:gameId/:turn', function(req, res){
-    NineboardGame.findById(req.params.gameId, function(err,game){
-        if(!err){
-            addTurn(game, req.params.turn, req.param.id, function(game){
-                res.json(game);
-            });
+app.post('/api/:id/games2/:gameId', function(req, res){
+	var userId = req.param.id;
+	var gameId = req.param.gameId;
+	var turnBigBoardPosition = req.body.big_board_position;
+	var turnSmallBoardPosition = req.body.small_board_position;
+	
+    NineboardGame.findById(gameId, function(err,game) {
+		if(!err && game){
+			var numeralRepresentingPlayerTurn = 2;
+			if (game.players[0] == userId) {
+				numeralRepresentingPlayerTurn = 1;
+			}
+			game.fullBoard[turnBigBoardPosition][turnSmallBoardPosition] = numeralRepresentingPlayerTurn;
+			
+			game.save(function(err, savedGame) {
+				if (err) {
+					res.send(err);
+					console.log(err);
+				}
+				else {
+					res.json(savedGame);
+				}
+			});
             //if(checkWin(game)){
                 //game.gameStatus.ongoing="Done";
             //}
         }
-        else{
+        else {
             res.send(err);
+			console.log(err);
         }
     });
 });
@@ -212,39 +210,42 @@ app.post('/api/:id/games2/:gameId/:turn', function(req, res){
 //req.param.player2id: id of the other user
 //Returns: The game created
 */
-app.post('/api/:id/:player2id/games', function(req,res){
+app.post('/api/:id/:player2fbid/games', function(req,res){
     
     var player1Id= req.param('id');
-    var player2Id= req.param('player2id');
+    var player2FbId= req.param('player2fbid');
     var game= new NineboardGame();
-    var gameState= new NineboardGameState();
-    var player2;
-    NineboardUser.findOne({facebookId:player2Id}, function(err, user){
-        player2=user;
+    var player2Id;
+    NineboardUser.findOne({facebookId: player2FbId}, function(err, user) {
+		if (err) {
+			res.json(err);
+			console.log("error finding user: " + err);
+		}
+        player2Id = "testopponentid"; //user.id;
+		game.players= [player1Id, player2Id];
+
+		var fullBoardArray = new Array();
+		for (var j = 0; j < 9; j++) {
+			var smallBoardArray = new Array();
+			for (var k = 0; k < 9; k++) {
+				smallBoardArray[k] = 0;
+			}
+			fullBoardArray[j] = smallBoardArray;
+		}
+	 	game.fullBoard = fullBoardArray;  
+	 
+		game.save(function(err, savedGame){
+	    	if (!err){
+				res.json(savedGame);
+			}
+			else {
+				console.log("error creating game: " + err);
+				res.send(err);
+			}
+	    });
     });
     
-    game.players= [player1Id, user.id];
-    game.gameStatus.ongoing= 'Active';
-    game.gameStatus.winner= 'null';
     
-    makeBoard(function(board1){
-        makeBoard(function(board2){
-            makeBoard(function(board3){
-                gameState.bigBoard= board1.concat(board2.concat(board3));
-                gameState.save(function(err,savedGameState){
-                    game.gameStates= [savedGameState.id];
-                    game.save(function(err, savedGame){
-                        if(!err){
-                            res.json(savedGame);
-                        }
-                        else{
-                            res.send(err);
-                        }
-                    });
-                });
-            });
-        });
-    });
 });
 
 /* Leaderboard
