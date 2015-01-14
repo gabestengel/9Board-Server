@@ -4,12 +4,16 @@ var gameStateSchema = require('../models/game-state.js');
 var ObjectId= mongoose.Schema.Types.ObjectId;
 
 var gameSchema   = new Schema({
-	    players: [String],
+	    playerIds: [String],
+		playerFacebookIds: [String],
+		playerNames: [String],
 		active: {type:Boolean, default:true},
+		currentTurnId: String,
 		winnerId: String,
+		winnerName: String,
 		lastMove: {
-			bigBoardPosition: Number,
-			smallBoardPosition: Number
+			bigBoardPosition: {type: Number, default:-1},
+			smallBoardPosition: Number,
 		},
     	fullBoard: [],
 });

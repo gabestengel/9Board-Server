@@ -100,22 +100,22 @@ app.get('/api/user/:id/stats', function(req,res){
 // Returns: full data about all games of the user that are active
 // Work: none
 */
-app.get('/api/user/:id/games2/active', function(req,res){
-   NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err,game){
-        if(!err){
-            var games= new Array();
-            for(var i=0; i<=game.length-1; i++){
-                if(game[i].gameStatus.ongoing="Active"){
-                    games.push(game[i]);
-                }
-            }
-            res.json(games);
-        }
-        else{
-            res.send(err);
-        }
-    });
-});
+//app.get('/api/user/:id/games2/active', function(req,res){
+//   NineboardGame.find({ playerIds: { $in: [req.param('id')] }  }, function(err,game){
+//        if(!err){
+//            var games= new Array();
+//            for(var i=0; i<=game.length-1; i++){
+//                if(game[i].gameStatus.ongoing="Active"){
+//                    games.push(game[i]);
+//                }
+//            }
+//            res.json(games);
+//        }
+//        else{
+//            res.send(err);
+//        }
+//    });
+//});
 
 /* 
 // Parameters:
@@ -135,9 +135,11 @@ app.get('/api/user/:id/games/:gameId', function(req,res){
     });
 });
 
+// all games
+
 app.get('/api/user/:id/games2/all', function(req,res){
     
-    NineboardGame.find( { players: { $in: [req.param('id')] }  }, function(err, game){
+    NineboardGame.find( { playerIds: { $in: [req.param('id')] }  }, function(err, game){
         if(!err){
             res.json(game);
         }
@@ -147,22 +149,22 @@ app.get('/api/user/:id/games2/all', function(req,res){
     });
 });
 
-app.get('/api/user/:id/games2/past', function(req,res){
-    NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err, game){
-        if(!err){
-            var games= new Array();
-            for(var i=0; i<game.length; i++){
-                if(game[i].gameStatus.ongoing="Done"){
-                    games.push(game[i]);
-                }
-            }
-            res.json(games);
-        }
-        else{
-            res.send(err);
-        }
-    });
-});
+//app.get('/api/user/:id/games2/past', function(req,res){
+//    NineboardGame.find({ players: { $in: [req.param('id')] }  }, function(err, game){
+//        if(!err){
+//            var games= new Array();
+//            for(var i=0; i<game.length; i++){
+//                if(game[i].gameStatus.ongoing="Done"){
+//                    games.push(game[i]);
+//                }
+//            }
+//            res.json(games);
+//        }
+//        else{
+//            res.send(err);
+//        }
+//    });
+//});
 
 /* Plays a turn
 // Parameters: 
@@ -181,12 +183,25 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 	
     NineboardGame.findById(gameId, function(err,game) {
 		if(!err && game){
+			
 			var numeralRepresentingPlayerTurn = 2;
-			if (game.players[0] == userId) {
+			if (game.playerIds[0] == userId) {
 				numeralRepresentingPlayerTurn = 1;
 			}
 			game.fullBoard[turnBigBoardPosition][turnSmallBoardPosition] = numeralRepresentingPlayerTurn;
 			
+			game.lastMove.bigBoardPosition = turnBigBoardPosition;
+			game.lastMove.smallBoardPosition = turnSmallBoardPosition;
+			
+			if (game.currentTurnId == game.playerIds[0]) {
+				game.currentTurnId = game.playerIds[1];
+			}
+			else {
+				game.currentTurnId = game.playerIds[0];
+			}
+			console.log("game: " + game);
+			
+			game.markModified('fullBoard');
 			game.save(function(err, savedGame) {
 				if (err) {
 					res.send(err);
@@ -194,6 +209,7 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 				}
 				else {
 					res.json(savedGame);
+					console.log("savedgame: " + game);
 				}
 			});
             //if(checkWin(game)){
@@ -217,14 +233,16 @@ app.post('/api/:id/:player2fbid/games', function(req,res){
     var player1Id= req.param('id');
     var player2FbId= req.param('player2fbid');
     var game= new NineboardGame();
-    var player2Id;
+    
     NineboardUser.findOne({facebookId: player2FbId}, function(err, user) {
 		if (err) {
 			res.json(err);
 			console.log("error finding user: " + err);
 		}
-        player2Id = "testopponentid"; //user.id;
-		game.players= [player1Id, player2Id];
+        var player2Id = "gabe.stengel"; //user.id;
+		
+		game.playerIds= [player1Id, player2Id];
+		game.currentTurnId = player1Id;
 
 		var fullBoardArray = new Array();
 		for (var j = 0; j < 9; j++) {
@@ -303,7 +321,7 @@ function addTurn(game, recentTurn, id, callbackFunction){
     console.log(game.gameStates[game.gameStates.length-1]);
     NineboardGameState.findById(game.gameStates[game.gameStates.length-1], function(err, gameState){
         if(!err){
-        if(game.players[0]=id){
+        if(game.playerIds[0]=id){
             player=1;
             //gameState.currentPlayerMove=game.players[1];
         }
