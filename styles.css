@@ -1,0 +1,21 @@
+html {
+    background-color: #103484;
+}
+
+body {
+    text-align: center;
+    margin: 0 auto;
+    padding: 2em 2em 4em;
+    max-width: 800px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.2em;
+    color: navy;
+    background-color: lightblue;
+}
+
+#highScores table {
+    text-align: center;
+    margin : 5px auto;  
+    width : 300px;
+}
