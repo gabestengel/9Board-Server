@@ -22,11 +22,11 @@ var Schema = mongoose.Schema;
 var rowSchema = new Schema({
 	column: [Number]
 });
-var NineboardRow= mongoose.model('Row', rowSchema);
+var NineboardRow= mongoose.model('NineBoardRow', rowSchema);
 var smallBoardSchema   = new Schema({
 	row: [{type: ObjectId, ref:rowSchema}]
 });
-var NineboardSmallBoard= mongoose.model('smallBoard', smallBoardSchema);
+var NineboardSmallBoard= mongoose.model('NineBoardSmallBoard', smallBoardSchema);
 var gameStateSchema = new Schema({
 	    currentPlayerMove: Number,
     	lastMove: {
@@ -192,14 +192,15 @@ app.get('/api/user/:id/games2/past', function(req,res){
 // Returns: the new game state, complete with new board/current game state
 // Work: update board, check for win, if so update stats, return ^
 */
-app.post('/api/:id/games2/:gameId', function(req, res){
+app.post('/api/:id/games2/:gameId/:turn', function(req, res){
     NineboardGame.findById(req.params.gameId, function(err,game){
         if(!err){
-            addTurn(game, req.body.turn, req.param.id);
-            if(checkWin(game)){
-                game.gameStatus.ongoing="Done";
-            }
-            res.json(game);
+            addTurn(game, req.params.turn, req.param.id, function(game){
+                res.json(game);
+            });
+            //if(checkWin(game)){
+                //game.gameStatus.ongoing="Done";
+            //}
         }
         else{
             res.send(err);
@@ -226,14 +227,16 @@ app.post('/api/:id/:player2id/games', function(req,res){
         makeBoard(function(board2){
             makeBoard(function(board3){
                 gameState.bigBoard= board1.concat(board2.concat(board3));
-                game.gameStates= [gameState.id];
-                game.save(function(err, savedGame){
-                    if(!err){
-                        res.json(savedGame);
-                    }
-                    else{
-                        res.send(err);
-                    }
+                gameState.save(function(err,savedGameState){
+                    game.gameStates= [savedGameState.id];
+                    game.save(function(err, savedGame){
+                        if(!err){
+                            res.json(savedGame);
+                        }
+                        else{
+                            res.send(err);
+                        }
+                    });
                 });
             });
         });
@@ -285,30 +288,78 @@ function checkWin(game){
 }
 
 //add a turn
-function addTurn(game, recentTurn, id){
+function addTurn(game, recentTurn, id, callbackFunction){
     var player=0;
     var smallBoardIndex= Math.floor(recentTurn/100);
     var rowIndex= Math.floor((recentTurn/10)%10);
     var columnIndex= Math.floor(recentTurn%10);
-    var gameState= game.gameStates[game.gameStates.length-1];
-    if(game.players[0]=id){
-        player=1;
-        gameState.currentPlayerMove=2;
-    }
-    else{
-        player=2;
-        gameState.currentPlayerMove=1;
-    }
+    console.log(game.gameStates[game.gameStates.length-1]);
+    NineboardGameState.findById(game.gameStates[game.gameStates.length-1], function(err, gameState){
+        if(!err){
+        if(game.players[0]=id){
+            player=1;
+            //gameState.currentPlayerMove=game.players[1];
+        }
+        else{
+            player=2;
+            //gameState.currentPlayerMove=game.players[0];
+        }
+        console.log(gameState.bigBoard[smallBoardIndex]);
+        NineboardSmallBoard.findById(gameState.bigBoard[smallBoardIndex], function(err, smallBoard){
+            NineboardRow.findById(smallBoard.row[rowIndex], function(err, row2){
+                var row= new NineboardRow();
+                for(var i=0; i<3; i++){
+                    row.column[i]= row2.column[i];
+                }
+                row.column[columnIndex]= player;
+                row.save(function(err, savedRow){
+                    var biggieSmallBoard= new NineboardSmallBoard();
+                    for(var i=0; i<smallBoard.row.length; i++){
+                        biggieSmallBoard.row[i]= smallBoard.row[i];
+                    }
+                    biggieSmallBoard.row[rowIndex]= savedRow.id;
+                    biggieSmallBoard.save(function(err,savedBoard){
+                        var gameStateNew= new NineboardGameState();
+                        if(player==1){
+                            gameStateNew.currentPlayerMove=game.players[1];
+                        }
+                        else{
+                            gameStateNew.currentPlayerMove=game.players[0];
+                        }
+                        for(var i=0; i<gameState.bigBoard.length;i++){
+                            gameStateNew.bigBoard[i]=gameState.bigBoard[i];
+                        }
+                        gameStateNew.bigBoard[smallBoardIndex]= savedBoard.id;
+                        gameStateNew.lastMove.board= smallBoardIndex;
+                        gameStateNew.lastMove.row= rowIndex;
+                        gameStateNew.lastMove.column=columnIndex;
+                        gameStateNew.save(function(err, savedGameState){
+                            console.log(savedGameState.id);
+                            game.gameStates.push(savedGameState.id);
+                            game.save(function(err, savedGame){
+                                callbackFunction(savedGame);
+                                if(err){
+                                    res.send(err);
+                                }
+                            });
+                        });
+                    });
+                });
+            });
+        });
+        }
+        else{
+            res.send(err);
+        }
+    });
+    
+    /*
     gameState.bigBoard[smallBoardIndex].row[rowIndex].column[columnIndex]=player;
     gameState.lastMove.board= smallBoardIndex;
     gameState.lastMove.row= rowIndex;
     gameState.lastMove.column=columnIndex;
-    game.gameStates.push(gameState);
-    game.save(function(err){
-        if(err){
-            res.send(err);
-        }
-    });
+    game.gameStates.push(gameState);'
+    */
 }
 function makeBoard(callBackFunction){
     var row1= new NineboardRow();
