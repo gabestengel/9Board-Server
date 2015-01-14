@@ -474,4 +474,11 @@ function formFullBoard(game, dontcallmeMaybe){
             });
         }
     });
+    var waiting= true;
+    while(waiting){
+        if(returnArray[8][2][2]!=null){
+            waiting= false;
+            return returnArray;
+        }
+    }
 }
