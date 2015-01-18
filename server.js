@@ -206,7 +206,7 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 				console.log("user won!!!");
 				game.active = false;
 				game.winnerId = userId;
-				
+				userId.wins = userId.wins + 1;
 				
 				
 				game.save(function(err, savedGame) {
