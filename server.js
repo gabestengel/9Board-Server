@@ -205,8 +205,21 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 			if (userDidWin(game)) {
 				console.log("user won!!!");
 				game.active = false;
-				game.winnerId = userId;
-				userId.wins = userId.wins + 1;
+				game.winner = userId;
+				
+				NineboardUser.findById(userId, function(err, user){
+                			user.stats.winsNumber= user.stats.winsNumber+1;
+                		});
+                		NineboardUser.findById(game.players[0], function(err,user){
+                			if(userId!=user.id){
+                				user.stats.losses= user.stats.losses+1;
+                			}
+         			});
+                		NineboardUser.findById(game.players[1], function(err,user){
+                			if(userId= user.id){
+                				user.stats.losses= user.stats.losses+1;
+                			}
+                		});
 				
 				
 				game.save(function(err, savedGame) {
