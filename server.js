@@ -197,9 +197,22 @@ app.post('/api/:id/games2/:gameId/:turn', function(req, res){
             addTurn(game, req.params.turn, req.param.id, function(game){
                 res.json(game);
             });
-            //if(checkWin(game)){
-                //game.gameStatus.ongoing="Done";
-            //}
+            if(checkWin(game)){
+                game.gameStatus.ongoing="Done";
+                NineboardUser.findById(req.params.id, function(err, user){
+                	user.stats.winsNumber= user.stats.winsNumber+1;
+                });
+                NineboardUser.findById(game.players[0], function(err,user){
+                	if(req.params.id!=user.id){
+                		user.stats.losses= user.stats.losses+1;
+                	}
+                });
+                NineboardUser.findById(game.players[1], function(err,user){
+                	if(req.params.id= user.id){
+                		user.stats.losses= user.stats.losses+1;
+                	}
+                });
+            }
         }
         else{
             res.send(err);
