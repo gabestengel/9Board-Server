@@ -70,6 +70,7 @@ app.post('/api/user', function(req, res){
 		    user.save(function(err, savedUser) {
 		        if(!err){
 					console.log("new user id: " + savedUser.id);
+                    savedUser.stats.cumulativeScore= 1400;
 		            res.json({"userId": savedUser.id});
 		        }
 		        else {
@@ -208,18 +209,35 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 				game.winner = userId;
 				
 				NineboardUser.findById(userId, function(err, user){
-                			user.stats.winsNumber= user.stats.winsNumber+1;
-                		});
-                		NineboardUser.findById(game.players[0], function(err,user){
-                			if(userId!=user.id){
-                				user.stats.losses= user.stats.losses+1;
-                			}
-         			});
-                		NineboardUser.findById(game.players[1], function(err,user){
-                			if(userId= user.id){
-                				user.stats.losses= user.stats.losses+1;
-                			}
-                		});
+                    user.stats.winsNumber= user.stats.winsNumber+1;
+                    NineboardUser.findById(game.players[0], function(err,user2){
+                        if(userId!=user2.id){
+                            user2.stats.losses= user2.stats.losses+1;
+                            if(user2.stats.cumulativeScore<user.stats.cumulativeScore){
+                                user.stats.cumulativeScore= user.stats.cumulativeScore+((user2.stats.cumulativeScore/user.stats.cumulativeScore)*100);
+                                user2.stats.cumulativeScore= user2.stats.cumulativeScore-((user.stats.cumulativeScore/user2.stats.cumulativeScore)*50);
+                            }
+                            else{
+                                user2.stats.cumulativeScore= user.stats.cumulativeScore-((user2.stats.cumulativeScore/user.stats.cumulativeScore)*100);
+                                user.stats.cumulativeScore= user2.stats.cumulativeScore+((user.stats.cumulativeScore/user2.stats.cumulativeScore)*50);
+                            }
+                        }
+                    });
+                    NineboardUser.findById(game.players[1], function(err,user2){
+                        if(userId!=user2.id){
+                            user2.stats.losses= user2.stats.losses+1;
+                            if(user2.stats.cumulativeScore<user.stats.cumulativeScore){
+                                user.stats.cumulativeScore= user.stats.cumulativeScore+((user2.stats.cumulativeScore/user.stats.cumulativeScore)*100);
+                                user2.stats.cumulativeScore= user2.stats.cumulativeScore-((user.stats.cumulativeScore/user2.stats.cumulativeScore)*50);
+                            }
+                            else{
+                                user2.stats.cumulativeScore= user.stats.cumulativeScore-((user2.stats.cumulativeScore/user.stats.cumulativeScore)*100);
+                                user.stats.cumulativeScore= user2.stats.cumulativeScore+((user.stats.cumulativeScore/user2.stats.cumulativeScore)*50);
+                            }
+                        }
+                    });
+                });
+                
 				
 				
 				game.save(function(err, savedGame) {
