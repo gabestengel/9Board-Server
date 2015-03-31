@@ -261,7 +261,7 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
                     var note= new apn.Notification();
                     note.badge= 1;
                     note.sound= "ping.aiff";
-                    note.alert = "\iD83D\uDCE7 \u2709 "+user.name+" has moved";
+                    note.alert = "\iD83D\uDCE7 \u2709 "+user.name+" has won";
                     
                     apnConnection.pushNotification(note, myDevice);
 					return;
@@ -277,6 +277,14 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 						res.json(savedGame);
 						console.log("savedgame: " + game);
 					}
+                    //notification
+                    var myDevice= new apn.Device(token);
+                    var note= new apn.Notification();
+                    note.badge= 1;
+                    note.sound= "ping.aiff";
+                    note.alert = "\iD83D\uDCE7 \u2709 "+user.name+" has moved";
+                    
+                    apnConnection.pushNotification(note, myDevice);
 				});
 			} 
 			
@@ -326,11 +334,20 @@ app.post('/api/:id/:player2fbid/games', function(req,res){
 		game.save(function(err, savedGame){
 	    	if (!err){
 				res.json(savedGame);
+                //notification
+                var myDevice= new apn.Device(token);
+                var note= new apn.Notification();
+                note.badge= 1;
+                note.sound= "ping.aiff";
+                note.alert = "\iD83D\uDCE7 \u2709 "+user.name+" has created a game against you";
+
+                apnConnection.pushNotification(note, myDevice);
 			}
 			else {
 				console.log("error creating game: " + err);
 				res.send(err);
 			}
+            
 	    });
     });
     
