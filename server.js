@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 var mongoose = require('mongoose');
 var path = require('path');
+var apn= require('apn');
 mongoose.connect('mongodb://localhost:27017/9board');
 
 // all environments
@@ -17,6 +18,10 @@ var NineboardUser = require('./models/user.js');
 var NineboardGame = require('./models/game.js');
 var ObjectId= mongoose.Schema.Types.ObjectId;
 var Schema = mongoose.Schema;
+
+//apn stuff
+var options= { };
+var apnConnection= new apn.Connection(options);
 
 
 
@@ -204,6 +209,7 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 			game.markModified('fullBoard');
 			
 			if (userDidWin(game)) {
+                var user;
 				console.log("user won!!!");
 				game.active = false;
 				game.winner = userId;
@@ -236,6 +242,7 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
                             }
                         }
                     });
+                    this.user=user;
                 });
                 
 				
@@ -249,6 +256,14 @@ app.post('/api/:id/game/:gameId/turn', function(req, res){
 						res.json(savedGame);
 						console.log("savedgame: " + savedGame);
 					}
+                    //notification
+                    var myDevice= new apn.Device(token);
+                    var note= new apn.Notification();
+                    note.badge= 1;
+                    note.sound= "ping.aiff";
+                    note.alert = "\iD83D\uDCE7 \u2709 "+user.name+" has moved";
+                    
+                    apnConnection.pushNotification(note, myDevice);
 					return;
 				});
 			}
